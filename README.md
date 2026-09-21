@@ -201,6 +201,7 @@ second dbt target to demonstrate portability, not as the deployed warehouse.
 nyaya/
   docs/
     data-sources.md    verified access, measured profiling, findings
+    data-model.md      dimensional model, grain, facts and dimensions
     prior-work.md      existing research and what it leaves open
   README.md
   LICENSE
