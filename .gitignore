@@ -1,0 +1,31 @@
+# local working notes, not part of the project
+CLAUDE.md
+HANDOFF.md
+docs/decisions.md
+docs/lit-judicial-bias-2022.md
+
+# data is fetched, never committed
+*.parquet
+*.pdf
+data/
+metadata/
+exploration/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# duckdb
+*.duckdb
+*.duckdb.wal
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# os
+.DS_Store
