@@ -210,6 +210,98 @@ finished yet. The 264 day median is biased downward. The same applies to filing
 rates, which look artificially thin in recent years because only filings that
 have already been disposed are visible. There is no correction, only disclosure.
 
+## Case details, mobile sourced (partial coverage)
+
+`s3://indian-high-court-judgments/metadata/parquet_case_details/`
+
+A second, much richer table that the main Parquet does not expose. Eleven files,
+about 68 MB, one row per CNR, not year partitioned.
+
+Sourced from the eCourts **mobile API** rather than the website. The scraper
+repository states the mobile workflow "is currently maintained in the
+`indian-district-court-judgments` repository while we stabilize the High Court
+mobile workflow; it has not yet been ported into this repo". It is therefore
+experimental and incomplete by design.
+
+### Coverage
+
+| Court | Cases | With hearing records |
+|---|---|---|
+| Allahabad High Court | 299,233 | 204,024 (68%) |
+| Bombay High Court | 81,864 | 80,251 (98%) |
+| High Court of Madhya Pradesh | 72,873 | 561 (0.8%) |
+| High Court of Himachal Pradesh | 5 | 3 |
+
+Four courts of 25, and one of those four is effectively empty.
+
+### Schema
+
+Twenty five columns against the main table's twelve. The additions:
+
+```
+hearings       ARRAY<STRUCT<cause_list_type, judge, business_on_date,
+                            hearing_date, purpose_of_listing>>
+acts           ARRAY<STRUCT<act, section>>
+linked_cases   ARRAY<STRUCT<filing_number, case_number>>
+documents      ARRAY<STRUCT<sr_no, document_no, date_of_receiving,
+                            filed_by, name_of_advocate, document_filed>>
+date_of_filing        distinct from date_of_registration
+petitioner, respondent, pet_advocate, res_advocate
+fir_no, fir_year, lower_court, judicial_section, purpose_name
+```
+
+### Hearings
+
+There is no adjournment field. Hearing dates and the presiding judge are
+recorded, not the reason a hearing failed to resolve anything.
+`purpose_of_listing` is null on 988,840 of 1,196,004 Allahabad hearing rows.
+
+Hearing count works as a proxy. Allahabad, cases with hearing records and
+parseable dates, filing to decision:
+
+```
+hearings    cases    median days
+1          55,534         11
+2 to 4     47,802         29
+5 to 9     19,134         75
+10 to 19   11,590        140
+20+         4,197        294
+```
+
+Median case has 3 hearings, mean 5.9, maximum 106.
+
+Two things this cannot distinguish. Who requested a delay is not recorded. And a
+case listed but not reached, because the court ran out of time that day, is
+indistinguishable from one adjourned on request. Indian cause lists routinely
+list more matters than can be heard, so court capacity and party tactics cannot
+be separated here.
+
+### Filing date is not registration date
+
+`date_of_filing` differs from `date_of_registration` in 98.9 percent of
+Allahabad cases, median gap 3 days. The main Parquet carries only registration,
+so every duration computed from it is slightly short.
+
+### Possible pending cases
+
+74,538 Allahabad rows, 24.9 percent, carry no decision date. The repository
+states this table includes cases with no order or judgment, which would make
+these genuinely pending and would partially lift the survivorship limitation for
+that one court.
+
+Not yet established. `disposal_nature` is empty on 82 percent of rows in the
+same file, so missing values and genuinely open cases cannot currently be told
+apart. Needs verification before use.
+
+One of those rows computes to a filing date roughly 126 years ago. That is a
+corrupt date, not a case.
+
+### Date formats are inconsistent within this dataset
+
+Allahabad uses `YYYY-MM-DD`. Madhya Pradesh uses `DD-MM-YYYY`. The main Parquet
+uses `DD-MM-YYYY` for registration and a timestamp for decision. Four formats
+from one publisher.
+
 ## Indian Supreme Court Judgments (secondary)
 
 Bucket `indian-supreme-court-judgments`, same access pattern. Partitions

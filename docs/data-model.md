@@ -183,6 +183,20 @@ used only to derive bench strength.
 `dim_court`, `dim_case_type` and `dim_date` are conformed, shared by both fact
 tables with identical meaning.
 
+## Scope: hearing data
+
+A second source carries hearing level records for Allahabad and Bombay High
+Courts, with partial coverage elsewhere (`data-sources.md`). It sits outside the
+conformed model, which stays on the 12 column data available for all 25 courts.
+
+For Allahabad and Bombay the extra fields support a separate, more detailed
+analysis: hearings per case, intervals between hearings, which judge sat on each
+listing, filing date as distinct from registration date, and acts and sections
+under which the case was brought.
+
+Those outputs are reported as covering those two courts specifically, not as
+national figures.
+
 ## Open questions
 
 Whether duplicate `cnr` values occur across partitions as well as within the
